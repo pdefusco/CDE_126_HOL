@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 cde_user=$1
 max_participants=$2
@@ -61,6 +61,9 @@ function loading_icon_env() {
     if [[ $build_status == $"ready" ]]; then
       echo "Setup Python Env Build Completed."
       break
+    elif [[ $build_status == *fail* ]]; then
+      echo "Setup Python Env Build Failed. Check the resource events in the CDE UI."
+      exit 1
     else
       for frame in "${loading_animation[@]}" ; do
         printf "%s\b" "${frame}"
@@ -97,10 +100,13 @@ function loading_icon_job() {
   trap "tput cnorm" EXIT
 
   while true; do
-    job_status=$(cde run list --filter 'job[like]%cde126-hol-setup-job-${demo}' | jq -r '[last] | .[].status')
+    job_status=$(cde run list --filter "job[eq]cde126-hol-setup-job-${demo}" | jq -r '[last] | .[].status')
     if [[ $job_status == "succeeded" ]]; then
       echo "Setup Job Execution Completed"
       break
+    elif [[ $job_status == "failed" || $job_status == "killed" ]]; then
+      echo "Setup Job Execution ${job_status}. Check the job run logs in the CDE UI."
+      exit 1
     else
       for frame in "${loading_animation[@]}" ; do
         printf "%s\b" "${frame}"

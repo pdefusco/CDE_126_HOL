@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 cde_user=$1
 vcluster_endpoint=$2
@@ -57,6 +57,9 @@ function loading_icon_env() {
     if [[ $build_status == $"ready" ]]; then
       echo "Python Env Build Has Completed"
       break
+    elif [[ $build_status == *fail* ]]; then
+      echo "Python Env Build Failed. Check the resource events in the CDE UI."
+      exit 1
     else
       for frame in "${loading_animation[@]}" ; do
         printf "%s\b" "${frame}"
