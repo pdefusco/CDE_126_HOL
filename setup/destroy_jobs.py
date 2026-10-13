@@ -46,7 +46,7 @@ from cdepy import cderesource
 from cdepy import utils
 
 DEV_JOBS_API_URL = "https://m4748n78.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1"
-PRD_JOBS_API_URL = "https://rncv8wqr.cde-mbk2gj8x.pdf-3425.a465-9q4k.cloudera.site/dex/api/v1"
+PRD_JOBS_API_URL = "https://45qf4rf4.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1"
 hol_username = "user001"
 
 WORKLOAD_USER = "pauldefusco" #Your CDP Workload Username
