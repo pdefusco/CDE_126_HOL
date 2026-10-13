@@ -75,7 +75,7 @@ loading_icon_env "Python Env Build in Progress"
 e=$(date)
 
 echo "##########################################################"
-printf "${fmt}" "CDE ${cde_demo} HOL deployment completed."
+printf "${fmt}" "CDE 1.26 HOL deployment completed."
 printf "${fmt}" "completion time:" "${e}"
 printf "${fmt}" "please visit CDE Resources UI to validate resources."
 echo "##########################################################"

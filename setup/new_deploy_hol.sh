@@ -119,8 +119,10 @@ function loading_icon_job() {
 
 loading_icon_job "Setup Job in Progress"
 
+e=$(date)
+
 echo "##########################################################"
-printf "${fmt}" "CDE ${cde_demo} HOL deployment completed."
+printf "${fmt}" "CDE 1.26 HOL deployment completed."
 printf "${fmt}" "completion time:" "${e}"
 printf "${fmt}" "please visit CDE Job Runs UI to view in-progress demo"
 echo "##########################################################"
