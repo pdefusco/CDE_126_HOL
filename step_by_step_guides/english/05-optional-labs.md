@@ -97,23 +97,25 @@ Together, these ACLs help ensure that only authorized users can run jobs or use 
 
 #### Create Unevenly Distributed Data
 
-Create CDE Depdendencies:
+Update the commands below to reflect your username wherever a resource, job, session or database is suffixed by a user e.g. ```db_1M_user001``` should become ```db_1M_user002``` if you are ```user002```.
+
+Create CDE Depdendencies. The Python Environment build takes a few minutes; wait until its status is "ready" before running the job:
 
 ```
 cde resource create \
-  --name datagen-env \
+  --name datagen-env-user001 \
   --type python-env
 
 cde resource upload \
-  --name datagen-env \
+  --name datagen-env-user001 \
   --local-path compaction_resources/requirements.txt
 
 cde resource create \
-  --name files-spark35 \
+  --name files-spark35-user001 \
   --type files
 
 cde resource upload \
-  --name files-spark35 \
+  --name files-spark35-user001 \
   --local-path compaction_resources/datagen.py
 ```
 
@@ -121,40 +123,42 @@ Run DataGen Job:
 
 ```
 cde job delete \
-  --name datagen_1M
+  --name datagen_1M_user001
 
 cde job create \
-  --name datagen_1M \
-  --python-env-resource-name datagen-env \
+  --name datagen_1M_user001 \
+  --python-env-resource-name datagen-env-user001 \
   --arg 25 \
   --arg 25 \
   --arg 1000000 \
-  --arg db_1M \
+  --arg db_1M_user001 \
   --arg source_1M \
   --type spark \
-  --mount-1-resource files-spark35 \
+  --mount-1-resource files-spark35-user001 \
   --application-file datagen.py \
   --executor-cores 4 \
   --executor-memory "4g"
 
 cde job run \
-  --name datagen_1M \
-  --executor-memory "10g"
+  --name datagen_1M_user001
 ```
 
-Next, we will use the data generated in order to create four Iceberg tables through a CDE Session. All tables will have the same data, but they will be partitioned differently according to different partitioning and bucketing schemes.
+Next, we will use the data generated in order to create four tables through a CDE Session. All tables will have the same data, but they will be partitioned differently according to different partitioning and bucketing schemes. Then we will convert them to Iceberg and compact them.
 
 First, launch the CDE Session:
 
 ```
 cde session create \
-  --name compactionsession \
+  --name compaction-session-user001 \
   --type pyspark \
-  --driver-cores 4 \
-  --driver-memory "8g" \
-  --executor-cores 5 \
-  --executor-memory "10g" \
-  --num-executors 5
+  --driver-cores 2 \
+  --driver-memory "4g" \
+  --executor-cores 2 \
+  --executor-memory "8g" \
+  --num-executors 2
+
+cde session interact \
+  --name compaction-session-user001
 ```
 
 Next, in the CDE Session, validate table creation.
@@ -162,7 +166,7 @@ Next, in the CDE Session, validate table creation.
 ```
 # Session Commands:
 
-db_name = "db_1M"
+db_name = "db_1M_user001"
 src_tbl = "source_1M"
 tgt_tbl = "target_1M"
 
@@ -173,7 +177,7 @@ df = spark.sql("select * from {0}.{1}".format(db_name, src_tbl))
 print(spark.sql("SHOW CREATE TABLE {0}.{1}".format(db_name, src_tbl)).collect()[0][0])
 
 #### Expected Output:
-CREATE TABLE `db_1M`.`source_1M` (
+CREATE TABLE spark_catalog.db_1M_user001.source_1M (
   `unique_id` INT,
   `code` STRING,
   `col1` FLOAT,
@@ -183,7 +187,7 @@ CREATE TABLE `db_1M`.`source_1M` (
   .
   `col99` FLOAT)
 USING parquet
-LOCATION 's3a://xxx/data/warehouse/tablespace/external/hive/db_1M.db/source_1M'
+LOCATION 's3a://xxx/data/warehouse/tablespace/external/hive/db_1m_user001.db/source_1M'
 TBLPROPERTIES (
   'numFilesErasureCoded' = '0',
   'bucketing_version' = '2',
@@ -193,12 +197,12 @@ TBLPROPERTIES (
 
 ##### Example 1: Repartition the source table into a single partition, then bucket and sort by "unique_id"
 
-This produced 25 evenly sized files of 64 MB each corresponding to 25 buckets. Each row is assigned into a bucket by means of a hashing function. On disk, the data will be written into files named "part-0000" but with 25 separate bucket ID's.
+This produces 25 evenly sized files (roughly 16 MB each with 1M rows) corresponding to 25 buckets. Each row is assigned into a bucket by means of a hashing function. On disk, the data will be written into files named "part-0000" but with 25 separate bucket ID's.
 
 ```
 ## PySpark Code in Session:
 
-db_name = "db_1M"
+db_name = "db_1M_user001"
 src_tbl = "source_1M"
 tgt_tbl = "ex_1"
 buckets = 25
@@ -216,12 +220,12 @@ df.repartition(1) \
 * This produces 25 partitions, where within each partition each row is assigned to a bucket by means of a hashing function.
 * Notice we are not asking spark to repartition by a specific column. Spark just uses internal statistics to produce an as even as possible distribution of data among partitions.
 * Depending on how data is distributed among each of the 25 partitions i.e. how skewed it is, Spark will hash each row based on "unique_id" and create bucket files within each partition.
-* The max number of possible files created is 625 for perfectly evenly distributed data. In this case, each file is roughly 6MB.
+* The max number of possible files created is 625 for perfectly evenly distributed data. In this case, each file is well under 1 MB.
 
 ```
 ## PySpark Code in Session:
 
-db_name = "db_1M"
+db_name = "db_1M_user001"
 src_tbl = "source_1M"
 tgt_tbl = "ex_2"
 buckets = 25
@@ -246,7 +250,7 @@ Explore cardinality of the "Code" column:
 ```
 ## PySpark Code in Session:
 
-db_name = "db_1M"
+db_name = "db_1M_user001"
 src_tbl = "source_1M"
 tgt_tbl = "ex_3"
 buckets = 25
@@ -259,15 +263,15 @@ spark.sql("""SELECT CODE, COUNT(*)
 +----+--------+
 |CODE|count(1)|
 +----+--------+
-|   g| 1819875|
-|   f| 1817273|
-|   e|  909405|
-|   h| 1363761|
-|   d|  911224|
-|   c|  909449|
-|   i|  907558|
-|   b|  907035|
-|   a|  454420|
+|   g|  182974|
+|   f|  181822|
+|   e|   90937|
+|   h|  136062|
+|   d|   90768|
+|   c|   91098|
+|   i|   91041|
+|   b|   90219|
+|   a|   45079|
 +----+--------+
 ```
 
@@ -287,12 +291,12 @@ df.repartition("code") \
 * Because the number of files can reach the product of the number of partitions and the number of buckets, "bucketBy" can be very slow for large datasets where partitions are randomly arranged with respect to bucketing columns.
 * Repartitioning can be dramatically faster when the number of partitions is set equal to the number of buckets, and the repartitioning key is made up of the bucketing columns. In other words, you will get the lowest number of files when you can align buckets and partitions i.e. having the repartitoning key made up of bucketing column(s).
 * However, this is hard to achieve because the data may not lend itself to this. Regardless, testing different combinations of repartitioning and bucketing keys with the objective of getting to an as small as possible number of files, aiming at roughly 128 MB filesize, is an exercise that goes in the direction of this "ideal" scenario.  
-* In the below example, the data is repartitioned by the low cardinality "code" column, as before, but this time the number of partitions is reduced to 5 resulting in 125 files i.e. a lower number of files each with more data than the previous example 3. Notice that the data skew in the "code" column leads to file size differences, with many files reaching ~40MB while others ~20MB or even as low as 7 MB in size.
+* In the below example, the data is repartitioned by the low cardinality "code" column, as before, but this time the number of partitions is reduced to 5 resulting in 125 files i.e. a lower number of files each with more data than the previous example 3. Notice that the data skew in the "code" column leads to file size differences, with some files two to four times larger than others.
 
 ```
 # PySpark Code
 
-db_name = "db_1M"
+db_name = "db_1M_user001"
 src_tbl = "source_1M"
 tgt_tbl = "ex_4"
 buckets = 25
@@ -309,87 +313,42 @@ df.repartition(5, "code") \
 
 Run the following commands in order to migrate the four tables to Iceberg without losing the Hive Table Physical Layout.
 
-First, show location of each of the four Hive tables:
+Iceberg's ```migrate``` and ```snapshot``` procedures cannot convert Spark bucketed tables. Instead, for each table we create an empty Iceberg table with the same schema and use the ```add_files``` procedure to register the existing Parquet data files in it. No data is rewritten, so each Iceberg table keeps exactly the same files as its source table.
+
+The CDE Session REPL runs one line per loop body, so each loop below is written on a single line.
 
 ```
-# List of table names you want to check
-tables = [
-    "db_1M.ex_1",
-    "db_1M.ex_2",
-    "db_1M.ex_3",
-    "db_1M.ex_4"
-]
+# List of table names you want to migrate
+tables = ["ex_1", "ex_2", "ex_3", "ex_4"]
 
-# Loop through each table and run the query
-for tbl in tables:
-    print(f"\n=== Table: {tbl} ===")
-    create_stmt = spark.sql("SHOW CREATE TABLE {}".format(tbl)).collect()[0][0]
-    lines = create_stmt.split("\n")
+# Find the location of each table
+locations = {tbl: spark.sql("DESCRIBE TABLE EXTENDED {0}.{1}".format(db_name, tbl)).filter("col_name = 'Location'").collect()[0][1] for tbl in tables}
+print(locations)
 
-    # Find the line containing LOCATION
-    location_line = next((line for line in lines if "LOCATION" in line), None)
+# Create an empty Iceberg table with the same schema as each table
+for tbl in tables: spark.sql("DROP TABLE IF EXISTS SPARK_CATALOG.{0}.{1}_iceberg".format(db_name, tbl))
 
-    if location_line:
-        # Extract the path string by removing 'LOCATION' and quotes, and stripping whitespace
-        table_location = location_line.replace("LOCATION", "").replace("'", "").strip()
+for tbl in tables: spark.sql("CREATE TABLE SPARK_CATALOG.{0}.{1}_iceberg USING iceberg AS SELECT * FROM {0}.{1} LIMIT 0".format(db_name, tbl))
 
-    iceTableName = tbl.split(".")[1]
-    iceTableName = "SPARK_CATALOG.DEFAULT." + iceTableName
-    print(f"\n=== Migrating to Iceberg Table: {iceTableName} ===")
-    print(f"\n Table Location: {table_location}")
-    # Migrate Table to Iceberg:
-    spark.sql("""
-      CREATE TABLE {}
-      USING iceberg
-      LOCATION '{}'
-    """.format(iceTableName, table_location))
+# Register the existing data files in each Iceberg table
+for tbl in tables: spark.sql("CALL spark_catalog.system.add_files(table => '{0}.{1}_iceberg', source_table => '`parquet`.`{2}`')".format(db_name, tbl, locations[tbl])).show()
 ```
 
 ### Look for Compaction Candidates
 
-Now that we have four tables, which one is best suited for compaction?
+Now that we have four Iceberg tables, which one is best suited for compaction?
 
-Let's answer that by investigating how many files are found per partition, for each table?
-
-```
-# List of table names you want to check
-tables = [
-    "spark_catalog.default.ex_1",
-    "spark_catalog.default.ex_2",
-    "spark_catalog.default.ex_3",
-    "spark_catalog.default.ex_4"
-]
-
-# Loop through each table and run the query
-for tbl in tables:
-    print(f"\n=== Table: {tbl} ===")
-    query = f"""
-        SELECT PARTITION, FILE_COUNT
-        FROM {tbl}$partitions
-    """
-    spark.sql(query).show(truncate=False)
-```
-
-What is the size of each partition, for each table?
+Let's answer that by investigating how many files each table has, and how big they are. Iceberg exposes this information through its metadata tables.
 
 ```
-# Loop through each table and run the query
-for tbl in tables:
-    print(f"\n=== Table: {tbl} ===")
-    query = f"""
-        SELECT PARTITION, SUM(file_size_in_bytes) AS PARTITION_SIZE
-        FROM {tbl}.FILES GROUP BY PARTITION
-    """
-    spark.sql(query).show(truncate=False)
+for tbl in tables: spark.sql("SELECT '{1}_iceberg' AS TABLE_NAME, COUNT(*) AS FILE_COUNT, ROUND(SUM(file_size_in_bytes)/1024/1024, 2) AS TOTAL_MB, ROUND(AVG(file_size_in_bytes)/1024/1024, 2) AS AVG_FILE_MB FROM SPARK_CATALOG.{0}.{1}_iceberg.files".format(db_name, tbl)).show(truncate=False)
 ```
 
+The "ex_2_iceberg" table has the most files, and the smallest ones: up to 625 files well under 1 MB each, holding the same data as the 25 files of "ex_1_iceberg". Explore its data files:
+
 ```
-spark.sql(
-  """SELECT f.partition, f.file_path, s.snapshot_id, s.timestamp
-  FROM spark_catalog.default.ex_1.files f
-  JOIN spark_catalog.default.ex_1.snapshots s
-  ON f.snapshot_id = s.snapshot_id"""
-).show()
+spark.sql("""SELECT file_path, file_size_in_bytes, record_count
+  FROM SPARK_CATALOG.{}.ex_2_iceberg.files""".format(db_name)).show(10, False)
 ```
 
 ### Run Compaction
@@ -397,25 +356,20 @@ spark.sql(
 Now that we identified the table we must run compaction on, we can finally do so with the following call procedure:
 
 ```
-from pyspark.sql import SparkSession
+table_identifier = db_name + ".ex_2_iceberg"
 
-table_identifier = "<table_name_here>"
-
-# Use SQL to call the procedure
-spark.sql(f"""
-  CALL my_catalog.system.rewrite_data_files(
-    table => '{table_identifier}',
-    strategy => 'binpack'
-  )
-""")
+spark.sql("CALL spark_catalog.system.rewrite_data_files(table => '{}', strategy => 'binpack')".format(table_identifier)).show()
 ```
 
-Now validate new file count per partition:
+Now validate the new file count. The small files were rewritten into a much smaller number of larger files, while the row count is unchanged:
 
 ```
-spark.sql("""
-  SELECT PARTITION, FILE_COUNT FROM SPARK_CATALOG.TABLE.PARTITIONS
-""").show()
+spark.sql("""SELECT COUNT(*) AS FILE_COUNT,
+  ROUND(SUM(file_size_in_bytes)/1024/1024, 2) AS TOTAL_MB,
+  ROUND(AVG(file_size_in_bytes)/1024/1024, 2) AS AVG_FILE_MB
+  FROM SPARK_CATALOG.{}.files""".format(table_identifier)).show()
+
+spark.sql("SELECT COUNT(*) FROM SPARK_CATALOG.{}".format(table_identifier)).show()
 ```
 
 ## Summary
