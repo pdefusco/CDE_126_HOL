@@ -85,13 +85,29 @@ def dropDatabase(spark, username):
     """
 
     try:
-        print("DROP DB CASCADE: {}".format(username))
-        spark.sql("DROP DATABASE IF EXISTS {} CASCADE".format(username))
+        print("DROP DB CASCADE: HOL_DB_{}".format(username))
+        spark.sql("DROP DATABASE IF EXISTS SPARK_CATALOG.HOL_DB_{} CASCADE".format(username))
     except Exception as e:
-        print("DROP {} DB UNSUCCESSFUL".format(username))
+        print("DROP HOL_DB_{} DB UNSUCCESSFUL".format(username))
         print('\n')
         print(f'caught {type(e)}: e')
         print(e)
+
+
+def dropDefaultTables(spark, username):
+    """
+    Method to drop the tables created in the default database for provided user
+    """
+
+    for table in ["target_table_" + username, "source_table_" + username, "CELL_TOWERS_" + username]:
+        try:
+            print("DROP TABLE: SPARK_CATALOG.DEFAULT.{}".format(table))
+            spark.sql("DROP TABLE IF EXISTS SPARK_CATALOG.DEFAULT.{} PURGE".format(table))
+        except Exception as e:
+            print("DROP {} TABLE UNSUCCESSFUL".format(table))
+            print('\n')
+            print(f'caught {type(e)}: e')
+            print(e)
 
 
 def main():
@@ -101,16 +117,12 @@ def main():
     spark = createSparkSession()
 
     for i in range(int(maxParticipants)):
-        if i+1 < 10:
-            username = "user00" + str(i+1)
-        elif i+1 > 9 and i+1 < 99:
-            username = "user0" + str(i+1)
-        elif i+1 > 99:
-            username = "user" + str(i+1)
+        username = "user" + str(i+1).zfill(3)
 
         print("PROCESSING USER {}...\n".format(username))
 
         dropDatabase(spark, username)
+        dropDefaultTables(spark, username)
 
 
 if __name__ == "__main__":

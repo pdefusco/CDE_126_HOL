@@ -39,21 +39,23 @@ Among other benefits, this brings CDE Admins and Users granular ACL's at the CDE
 
 ### Lab
 
+Update the commands below to reflect your username wherever a job or resource name is suffixed by a user e.g. ```myProperties_user001``` should become ```myProperties_user002``` if you are ```user002```.
+
 Create a CDE Files Resource with ACL
 
 ```
 cde resource create \
-  --name filesResource \
+  --name myProperties_user001 \
   --type files \
-  --acl-full-access-group group1 \            
-  --acl-full-access-user user1 \    
-  --acl-view-only-group group2 \               
+  --acl-full-access-group group1 \
+  --acl-full-access-user user1 \
+  --acl-view-only-group group2 \
   --acl-view-only-user user2
 ```
 
 ```
 cde resource upload \
-  --name myProperties \
+  --name myProperties_user001 \
   --local-path cde_jobs/propertiesFile_1.conf \
   --local-path cde_jobs/propertiesFile_2.conf \
   --local-path cde_jobs/sparkJob.py
@@ -63,19 +65,23 @@ Create a CDE Job with ACL
 
 ```
 cde job create \
-  --name sampleJob \
+  --name sampleJob_user001 \
   --type spark \
-  --mount-1-resource myProperties \
+  --mount-1-resource myProperties_user001 \
   --application-file sparkJob.py \
   --executor-cores 2 \
-  --executor-memory "2g"
+  --executor-memory "2g" \
+  --acl-full-access-group group1 \
+  --acl-full-access-user user1 \
+  --acl-view-only-group group2 \
+  --acl-view-only-user user2
 ```
 
 ```
-cde job run --name myPySparkJob\
---arg MY_DB\
---arg CUSTOMER_TABLE\
---arg propertiesFile_1.conf
+cde job run --name sampleJob_user001 \
+  --arg MY_DB \
+  --arg CUSTOMER_TABLE \
+  --arg propertiesFile_1.conf
 ```
 
 ### Summary
@@ -421,24 +427,28 @@ Cloudera Data Engineering (CDE) and the broader Cloudera Data Platform (CDP) off
 
 ### Lab
 
+Update the commands below to reflect your username wherever a resource, session or variable is suffixed by a user e.g. ```myFiles_user001``` should become ```myFiles_user002``` if you are ```user002```.
+
 #### Create CDE Files Resource
 
 ```
-cde resource create --name myFiles --type files
-cde resource upload --name myFiles --local-path resources/cell_towers_1.csv --local-path resources/cell_towers_2.csv
+cde resource create --name myFiles_user001 --type files
+cde resource upload --name myFiles_user001 --local-path resources/cell_towers_1.csv --local-path resources/cell_towers_2.csv
 ```
 
 #### Launch CDE Session & Run Spark Commands
 
+Session names must consist of lowercase alphanumeric characters and dashes.
+
 ```
-cde session create --name icebergSession --type pyspark --mount-1-resource myFiles
-cde session interact --name icebergSession
+cde session create --name iceberg-session-user001 --type pyspark --mount-1-resource myFiles_user001
+cde session interact --name iceberg-session-user001
 ```
 
 ##### Create Iceberg Table
 
 ```
-USERNAME = "pauldefusco"
+USERNAME = "user001"
 
 df  = spark.read.csv("/app/mount/cell_towers_1.csv", header=True, inferSchema=True)
 df.writeTo("CELL_TOWERS_{}".format(USERNAME)).using("iceberg").tableProperty("write.format.default", "parquet").createOrReplace()
@@ -446,20 +456,7 @@ df.writeTo("CELL_TOWERS_{}".format(USERNAME)).using("iceberg").tableProperty("wr
 
 ### Working with Iceberg Table Branches
 
-##### Create Iceberg Table Branch
-
-```
-# CREATE TABLE BRANCH - Skip: Not supported
-spark.sql("ALTER TABLE CELL_TOWERS_{} \
- CREATE BRANCH ingestion_branch \
- RETAIN 7 DAYS \
- WITH RETENTION 2 SNAPSHOTS;".format(USERNAME))
-
-# SET TABLE BRANCH AS ACTIVE - Skip: Not supported
-spark.sql("SET spark.wap.branch = 'ingestion_branch';")
-```
-
-##### Upsert Data into Branch with Iceberg Merge Into
+##### Create Iceberg Table Branch and Write Data into Branch
 
 ```
 # LOAD NEW TRANSACTION BATCH
@@ -467,9 +464,9 @@ batchDf = spark.read.csv("/app/mount/cell_towers_2.csv", header=True, inferSchem
 batchDf.printSchema()
 batchDf.createOrReplaceTempView("BATCH_TEMP_VIEW".format(USERNAME))
 
-# CREATE TABLE BRANCH - Supported
+# CREATE TABLE BRANCH
 spark.sql("ALTER TABLE CELL_TOWERS_{} CREATE BRANCH ingestion_branch".format(USERNAME))
-# WRITE DATA OPERATION ON TABLE BRANCH - Supported
+# WRITE DATA OPERATION ON TABLE BRANCH
 batchDf.write.format("iceberg").option("branch", "ingestion_branch").mode("append").save("CELL_TOWERS_{}".format(USERNAME))
 ```
 
@@ -517,7 +514,7 @@ Track table snapshots post Merge Into operation:
 
 ```
 # QUERY ICEBERG METADATA HISTORY TABLE
-spark.sql("SELECT * FROM CELL_TOWERS_{}.snapshots".format(USERNAME)).show(20, False)
+spark.sql("SELECT * FROM SPARK_CATALOG.DEFAULT.CELL_TOWERS_{}.snapshots".format(USERNAME)).show(20, False)
 ```
 
 ### Working with Iceberg Table Tags
@@ -546,11 +543,11 @@ Rollback table to state prior to merge into.
 # SHOW LATEST TABLE HISTORY
 spark.sql("SELECT * FROM SPARK_CATALOG.DEFAULT.CELL_TOWERS_{}.HISTORY;".format(USERNAME)).show()
 
-# SELECT SECOND LAST SNAPSHOT ID FROM HISTORY
-priorSnapshotId = spark.sql("SELECT MIN(SNAPSHOT_ID) FROM SPARK_CATALOG.DEFAULT.CELL_TOWERS_{}.HISTORY".format(USERNAME)).collect()[0][0]
+# SELECT FIRST SNAPSHOT ID FROM HISTORY (TABLE STATE PRIOR TO THE BRANCH APPEND)
+priorSnapshotId = spark.sql("SELECT SNAPSHOT_ID FROM SPARK_CATALOG.DEFAULT.CELL_TOWERS_{}.HISTORY ORDER BY MADE_CURRENT_AT ASC LIMIT 1".format(USERNAME)).collect()[0][0]
 
 # REPLACE ICEBERG SNAPSHOT ID WITH VALUE OBTAINED ABOVE
-spark.sql("CALL SPARK_CATALOG.rollback_to_snapshot('DEFAULT.CELL_TOWERS_{0}', {1})".format(USERNAME, priorSnapshotId))
+spark.sql("CALL SPARK_CATALOG.system.rollback_to_snapshot('DEFAULT.CELL_TOWERS_{0}', {1})".format(USERNAME, priorSnapshotId))
 
 # VALIDATE ROLLBACK BY VERIFYING TABLE COUNT
 spark.sql("SELECT COUNT(*) FROM SPARK_CATALOG.DEFAULT.CELL_TOWERS_{}".format(USERNAME)).show()

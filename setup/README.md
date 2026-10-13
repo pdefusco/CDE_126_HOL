@@ -82,7 +82,7 @@ For example:
 
 ```
 #Azure
-% ./setup/deploy_hol_resources.sh pauldefusco https://k5hzst9x.cde-jhnkv684.pdf-jul.a465-9q4k.cloudera.site/dex/api/v1 manufacturing
+% ./setup/deploy_hol_resources.sh pauldefusco https://<vc-id>.cde-<service-id>.<env>.a465-9q4k.cloudera.site/dex/api/v1 manufacturing
 ```
 
 #### 3. Airflow Configurations
@@ -138,10 +138,16 @@ The image bakes in the CDE 1.26 CLI and Spark Connect tarballs. The large binari
 
 ## Teardown Instructions
 
-When you are done run this script to tear down the data in the Catalog but not in S3. That step will be handles by the GOES teardown scripts.
+When you are done run this script to tear down the data in the Catalog but not in S3. That step will be handled by the GOES teardown scripts. It drops each participant's HOL_DB_userNNN database and the participant tables created in the default database.
 
 ```
-% ./teardown.sh cdpworkloaduser
+% ./setup/teardown.sh <cdp-workload-user> <max-participants>
+```
+
+For example:
+
+```
+% ./setup/teardown.sh pauldefusco 2
 ```
 
 ## Python Utils
