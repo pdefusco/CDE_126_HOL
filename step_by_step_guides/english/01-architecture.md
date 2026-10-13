@@ -208,8 +208,8 @@ vi ~/.cde/config.yaml
 Your cde config file should look something like this:
 
 ```
-user: pauldefusco
-vcluster-endpoint: https://tckh2dlb.cde-h5d699bk.cotiviti.xfaz-gdb4.cloudera.site/dex/api/v1
+user: user001
+vcluster-endpoint: https://m4748n78.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1
 cdp-endpoint: https://api.us-west-1.cdp.cloudera.com
 ```
 
@@ -253,7 +253,7 @@ You are now ready to use the CDE CLI.
 Set up the JOBS API URL for your DEV cluster as an environment variable:
 
 ```
-export DEV_VCLUSTER_ENDPOINT=https://tckh2dlb.cde-h5d699bk.cotiviti.xfaz-gdb4.cloudera.site/dex/api/v1
+export DEV_VCLUSTER_ENDPOINT=https://m4748n78.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1
 ```
 
 Update the commands below to reflect your username wherever a job or resource name is prefixed by a user e.g. ```spark_observability_hol_user001``` should become ```spark_observability_hol_user002``` if you are ```user002```.

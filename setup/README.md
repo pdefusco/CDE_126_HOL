@@ -53,12 +53,12 @@ You must always create data in the data directory. For example:
 
 ```
 #AWS
-% ./setup/new_deploy_hol.sh pauldefusco 10 s3a://pdf-jan-26-buk-7c0e831f/data/cde-125-hol bank
+% ./setup/new_deploy_hol.sh pauldefusco 10 s3a://pdf101126-buk-b8415038/data/cde-126-hol bank
 ```
 
 ```
 #Azure
-% ./setup/new_deploy_hol.sh pauldefusco 7 abfs://logs@go01demoazure.dfs.core.windows.net/data/cde-125-hol manufacturing
+% ./setup/new_deploy_hol.sh pauldefusco 7 abfs://logs@go01demoazure.dfs.core.windows.net/data/cde-126-hol manufacturing
 ```
 
 #### 2. Run deploy_hol_resources.sh in all the Spark 3.5 Virtual Clusters used by Participants.
@@ -77,7 +77,7 @@ For example:
 
 ```
 #AWS
-% ./setup/deploy_hol_resources.sh pauldefusco https://ngz58bzm.cde-tjp22mgj.pdf-jan.a465-9q4k.cloudera.site/dex/api/v1 bank
+% ./setup/deploy_hol_resources.sh pauldefusco https://m4748n78.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1 bank
 ```
 
 ```
