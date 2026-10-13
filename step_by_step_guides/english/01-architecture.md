@@ -318,7 +318,7 @@ Using the JupyterLab IDE, open ```observability/iceberg_merge_skew_multikey_dyna
 Next, open ```airflow_orch.py``` and also familiarize yourself with the code.
 
 * At line 52, update the ```username``` variable with your assigned user e.g. ```user001```.
-* At line 57, update the ```owner``` variable with your name e.g. ```mike```.
+* At line 59, update the ```owner``` variable with your name e.g. ```mike```.
 
 Next, use the following commands to set up the Airflow pipeline. Before running them, copy the commands to your notepad or notebook and update the username appended to each command with your assigned username e.g. ```user001```.
 
