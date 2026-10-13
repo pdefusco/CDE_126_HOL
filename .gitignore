@@ -1,0 +1,13 @@
+# Large binaries are distributed as GitHub Release assets, not committed
+/bin/
+pyspark-*.tar.gz
+
+# Secrets and local config
+*.pem
+*-pass*
+.local/
+
+# OS / editor
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/

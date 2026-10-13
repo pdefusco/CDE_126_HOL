@@ -1,0 +1,48 @@
+# CDE 1.26 Virtual Clusters run Python 3.11; the Spark Connect client must match
+FROM --platform=linux/amd64 python:3.11-slim-bookworm
+
+RUN apt-get update && apt-get install -y --no-install-recommends gcc make curl bash git vim-tiny less jq procps \
+    && ln -sf /usr/bin/vim.tiny /usr/bin/vi \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --shell /bin/bash cdeuser
+WORKDIR /home/cdeuser
+
+RUN mkdir /home/cdeuser/.cde /home/cdeuser/.cdp
+
+RUN pip3 install --no-cache-dir jupyter \
+  jupyterlab
+RUN pip3 install --no-cache-dir numpy \
+  pandas \
+  matplotlib \
+  scikit-learn
+
+# CDE 1.26 CLI (linux-amd64), downloaded by docker/build.sh
+COPY bin/cde /usr/local/bin/cde
+RUN chmod 755 /usr/local/bin/cde
+
+# Copy files and directories with ownership set to cdeuser
+COPY --chown=cdeuser:cdeuser de-pipeline-manufacturing /home/cdeuser/de-pipeline-manufacturing
+COPY --chown=cdeuser:cdeuser de-pipeline-bank /home/cdeuser/de-pipeline-bank
+COPY --chown=cdeuser:cdeuser setup /home/cdeuser/setup
+COPY --chown=cdeuser:cdeuser img /home/cdeuser/img
+COPY --chown=cdeuser:cdeuser config.yaml /home/cdeuser/.cde/config.yaml
+COPY --chown=cdeuser:cdeuser credentials /home/cdeuser/.cdp/credentials
+# CDE 1.26 Spark Connect tarballs (cdeconnect + pyspark), installed by participants in Lab 2
+COPY --chown=cdeuser:cdeuser spark-connect/ /home/cdeuser/
+COPY --chown=cdeuser:cdeuser observability /home/cdeuser/observability
+COPY --chown=cdeuser:cdeuser Iceberg_TimeTravel_PySpark_banking.ipynb /home/cdeuser/Iceberg_TimeTravel_PySpark_banking.ipynb
+COPY --chown=cdeuser:cdeuser Iceberg_TimeTravel_PySpark_manufacturing.ipynb /home/cdeuser/Iceberg_TimeTravel_PySpark_manufacturing.ipynb
+COPY --chown=cdeuser:cdeuser pyspark-app.py /home/cdeuser/pyspark-app.py
+
+USER root
+RUN chown -R cdeuser:cdeuser /home/cdeuser &&\
+    chmod -R u+rw /home/cdeuser &&\
+    chmod 600 /home/cdeuser/.cde/config.yaml /home/cdeuser/.cdp/credentials
+USER cdeuser
+
+ENV PATH="/home/cdeuser/.local/bin:${PATH}"
+
+EXPOSE 8888
+
+CMD ["bash", "-c", "jupyter-lab --ip='0.0.0.0' --port=8888 --no-browser"]

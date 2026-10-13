@@ -1,0 +1,376 @@
+# CDE Architecture
+
+## Objective
+
+In this section you will learn about CDE's flexible architecture and its main components and run your first Spark, Iceberg and Airflow pipeline with the CDE CLI.
+
+## Table of Contents
+
+* [Introduction to the CDE Service](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#introduction-to-the-cde-service)
+  * [CDP Environment](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#cdp-environment)
+  * [CDE Service](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#cde-service)
+  * [Virtual Cluster](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#cde-virtual-cluster)
+  * [CDE Jobs](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#jobs)
+  * [CDE Resource](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#resource)
+  * [Job Run](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#job-run)
+  * [CDE Sessions](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#cde-session)
+  * [Apache Iceberg](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#apache-iceberg)
+  * [CDE User Interface](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#cde-user-interface)
+* [Introductory Lab: Introductory Lab: CDE CLI and Your First CDE Pipeline with Spark and Airflow](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#introductory-lab-cde-cli-and-your-first-cde-pipeline-with-spark-and-airflow)
+* [Summary](https://github.com/pdefusco/CDE_126_HOL/blob/main/step_by_step_guides/english/01-architecture.md#summary)
+
+## Lab 1: Introduction to the CDE Service (Reading)
+
+Cloudera Data Engineering (CDE) is a service for Cloudera Data Platform that allows you to submit batch jobs to auto-scaling virtual clusters. CDE enables you to spend more time on your applications, and less time on infrastructure.
+
+Cloudera Data Engineering allows you to create, manage, and schedule Apache Spark jobs without the overhead of creating and maintaining Spark clusters. With Cloudera Data Engineering, you define virtual clusters with a range of CPU and memory resources, and the cluster scales up and down as needed to run your Spark workloads, helping to control your cloud costs.
+
+The CDE Service can be reached from the CDP Home Page by clicking on the blue "Data Engineering" icon.
+
+![alt text](../../img/cdp_lp_0.png)
+
+The CDE Landing Page allows you to access, create and manage CDE Services and Virtual Clusters. Within each CDE Service you can deploy one or more CDE Virtual Cluster. In the Virtual Cluster you can create, monitor and troubleshoot Spark and Airflow Jobs.
+
+The CDE Service is pegged to the CDP Environment. Each CDE Service is mapped to at most one CDP Environment while a CDP Environment can map to one or more CDE Services.
+
+These are the most important components in the CDE Service:
+
+##### CDP Environment
+A logical subset of your cloud provider account including a specific virtual network. CDP Environments can be in AWS, Azure, RedHat OCP and Cloudera ECS. For more information, see [CDP Environments](https://docs.cloudera.com/management-console/cloud/overview/topics/mc-core-concepts.html). Practically speaking, an environment is equivalent to a Data Lake as each environment is automatically associated with its own SDX services for Security, Governance and Lineage.
+
+##### CDE Service
+The long-running Kubernetes cluster and services that manage the CDE Virtual Clusters. The CDE Service must be enabled on an environment before you can create any CDE Virtual Clusters.
+
+##### CDE Virtual Cluster
+An individual auto-scaling cluster with predefined CPU and memory ranges. Virtual Clusters in CDE can be created and deleted on demand. Jobs are associated with clusters. When deploying a Virtual Cluster you can choose between two Cluster Tiers:
+
+*Core (Tier 1)*: Batch-based transformation and engineering options include:
+* Autoscaling Cluster
+* Spot Instances
+* SDX/Lakehouse
+* Job Lifecycle
+* Monitoring
+* Workflow Orchestration
+
+*All Purpose (Tier 2)*: Develop using interactive sessions and deploy both batch and streaming workloads. This option includes all options in Tier 1 with the addition of the  following:
+* Shell Sessions - CLI and Web
+* JDBC/SparkSQL
+* IDE (Spark Connect)
+
+Core clusters are recommended as Production environments. All Purpose clusters are instead designed to be used as Development and Testing environments.
+For more information on the CDE 1.26 release please visit this page in the [documentation](https://docs.cloudera.com/data-engineering/cloud/release-notes/topics/cde-whats-new-1.26.1.html).
+
+##### Jobs
+Application code along with defined configurations and resources. Jobs can be run on demand or scheduled. An individual job execution is called a job run.
+
+##### Resource
+A defined collection of files such as a Python file or application JAR, dependencies, and any other reference files required for a job.
+
+##### Job Run
+An individual job run.
+
+##### CDE Session
+
+CDE interactive sessions give data engineers flexible end-points to start developing Spark applications from anywhere -- in a web-based terminal, local CLI, favorite IDE, and even via JDBC from third-party tools.
+
+##### Apache Iceberg
+
+Apache Iceberg is a cloud-native, high-performance open table format for organizing petabyte-scale analytic datasets on a file system or object store. Combined with Cloudera Data Platform (CDP), users can build an open data lakehouse architecture for multi-function analytics and to deploy large scale end-to-end pipelines.
+
+Open Data Lakehouse on CDP simplifies advanced analytics on all data with a unified platform for structured and unstructured data and integrated data services to enable any analytics use case from ML, BI to stream analytics and real-time analytics. Apache Iceberg is the secret sauce of the open lakehouse.
+
+Iceberg is compatible with a variety of compute engines including Spark. CDE allows you to deploy Iceberg-enabled Virtual Clusters.
+
+For more information please visit the [documentation](https://iceberg.apache.org/).
+
+##### CDE User Interface
+
+Now that you have covered the basics of CDE, spend a few moments familiarizing yourself with the CDE Landing page.
+
+The Home Page provides a high level overview of all CDE Services and Clusters. At the top, you have shortcuts to creating CDE Jobs and Resources.
+
+![alt text](../../img/new_home_119.png)
+
+Scroll down to the CDE Virtual Clusters section and notice that all Virtual Clusters and each associated CDP Environment / CDE Service are shown.
+
+![alt text](../../img/new_home_119_2.png)
+
+Next, open the Administration page on the left tab. This page also shows CDE Services on the left and associated Virtual Clusters on the right.
+
+![alt text](../../img/service_cde.png)
+
+Open the CDE Service Details page and notice the following key information and links:
+
+* CDE Version
+* Nodes Autoscale Range
+* CDP Data Lake and Environment
+* Graphana Charts. Click on this link to obtain a dashboard of running Service Kubernetes resources.
+* Resource Scheduler. Click on this link to view the Yunikorn Web UI.
+
+![alt text](../../img/service_cde_2.png)
+
+Scroll down and open the Configurations tab. Notice that this is where Instance Types and Instance Autoscale ranges are defined.
+
+![alt text](../../img/cde_configs.png)
+
+To learn more about other important service configurations please visit [Enabling a CDE Service](https://docs.cloudera.com/data-engineering/cloud/enable-data-engineering/topics/cde-enable-data-engineering.html) in the CDE Documentation.
+
+Navigate back to the Administration page and open a Virtual Cluster's Cluster Details page.
+
+![alt text](../../img/cde_virtual_cluster_details.png)
+
+This view includes other important cluster management information. From here you can:
+
+* Download the CDE CLI binaries. The CLI is recommended to submit jobs and interact with CDE. It is covered in Part 3 of this guide.
+* Visit the API Docs to learn the CDE API and build sample requests on the Swagger page.
+* Access the Airflow UI to monitor your Airflow Jobs, set up custom connections, variables, and more.  
+
+Open the Configuration tab. Notice that you can select between Core and All Purpose Tier Clusters.
+In addition, this view provides options to set CPU and Memory autoscale ranges, Spark version, and Iceberg options are set here.
+CDE 1.26 supports Spark 3.5.4.
+
+![alt text](../../img/vc_details_1.png)
+
+![alt text](../../img/vc_details_2.png)
+
+![alt text](../../img/vc_details_3.png)
+
+To learn more about CDE Architecture please visit [Creating and Managing Virtual Clusters](https://docs.cloudera.com/data-engineering/cloud/manage-clusters/topics/cde-create-cluster.html) and [Recommendations for Scaling CDE Deployments](https://docs.cloudera.com/data-engineering/cloud/deployment-architecture/topics/cde-general-scaling.html)
+
+## Lab 2: CDE CLI and Your First CDE Pipeline with Spark and Airflow
+
+Review the code located in ```observability/iceberg_merge_skew_multikey_dynamic_incremental_random_overlap.py```.
+
+#### Step 1: Pull the Docker Container and Launch the IDE
+
+Clone the GitHub repository in your local machine.
+
+```
+git clone https://github.com/pdefusco/CDE_126_HOL.git
+cd CDE_126_HOL
+```
+
+Launch the Docker container.
+
+```
+docker run -p 8888:8888 pauldefusco/cde_126_hol
+```
+
+Launch the JupyterLab IDE in your browser by copy and pasting the provided url as shown below.
+
+![alt text](../../img/docker-container-launch.png)
+
+You now have access to all lab materials from the JupyterLab IDE in the left pane. From here, you can launch notebooks and run the terminal.
+
+![alt text](../../img/jl-home.png)
+
+##### Option B: EC2 Instance (no Docker)
+
+If you can't run Docker locally, your HOL instructor may give you the address of an EC2 instance instead. The instance was bootstrapped with ```setup/aws-bootstrap-native.sh``` and already has the same contents as the container: Python 3.11, JupyterLab, the CDE CLI, the CDE 1.26 Spark Connect packages, and the CDE and CDP configuration templates.
+
+Open ```http://<your-ec2-public-address>``` in your browser to reach the JupyterLab IDE, then continue with Step 2. All remaining steps are the same as with the Docker container.
+
+You will use the terminal in the IDE to run the CDE CLI commands for the labs. First you need to configure the CLI and install Spark Connect though.
+
+#### Step 2: Configure the CDE CLI
+
+The Cloudera Data Engineering (CDE) CLI is a command-line client for interacting with a CDE Virtual Cluster's Jobs API, letting you manage the
+full lifecycle of data engineering workloads without using the web UI.
+
+With it you can create, configure, run, schedule, and monitor Spark and Airflow jobs; submit one-off Spark applications or DAGs directly; and manage the resources (files, jars, Python environments, and custom runtimes) that those jobs depend on. It also supports interactive Spark sessions, Git-backed repositories, credentials, and backup/restore of jobs and resources for migration—while giving you fine-grained control over each run through commands to fetch logs, check status, wait for completion, debug, or kill executions.
+
+In short, the CDE CLI lets you deploy and operate your entire data pipeline programmatically, making it ideal for automation, CI/CD integration, and scripting repeatable workflows.
+
+```
+| Command Group | Description |
+|---------------|-------------|
+| `cde job` | Manage job definitions — create, update, run, list, describe, delete, clone, import, and schedule jobs. A job is a reusable Spark or Airflow definition bound to a resource and configuration. |
+| `cde run` | Manage individual executions — list, describe, view logs, wait for completion, kill runs, debug, inspect fine-grained status (`fg-status`), and open the UI. |
+| `cde resource` | Manage resources (file, Python, and custom runtime buckets) — create, upload, upload archives, download, delete, list, describe, and view events. This is where job files, JARs, and Python environments are stored. |
+| `cde spark` | Submit a one-off Spark application (`jar` or `py`) without creating a persisted job definition. |
+| `cde session` | Manage interactive Spark/PySpark sessions — create sessions, submit statements, interact with running sessions, view logs, and terminate sessions. |
+| `cde airflow` | Submit Airflow DAGs and manage Airflow Python environments. The `*-pyenv` commands are deprecated and available only on Private Cloud deployments. |
+| `cde repository` | Manage Git-backed repositories — create, sync, download, and update repositories. |
+| `cde credential` | Manage credentials (experimental), such as Docker registry and repository credentials. |
+| `cde backup` | Create, restore, and list backup archives for migrating jobs and resources. |
+| `cde kerberos` | Manage Kerberos authentication (Private Cloud only). |
+| `cde profile` | Inspect configuration profiles and show the active profile. |
+```
+
+Open CDE's configurations and apply your Workload Username and Jobs API URL. As shown in the screenshots below, you can find your Jobs API URL in your Virtual Cluster's Details Page.
+
+Open the cde config file from the jupyterlab terminal and edit the ```user``` and ```vcluster-endpoint``` values.
+
+```
+vi ~/.cde/config.yaml
+```
+
+Your cde config file should look something like this:
+
+```
+user: pauldefusco
+vcluster-endpoint: https://tckh2dlb.cde-h5d699bk.cotiviti.xfaz-gdb4.cloudera.site/dex/api/v1
+cdp-endpoint: https://api.us-west-1.cdp.cloudera.com
+```
+
+![alt text](../../img/jobs-api-url-1.png)
+
+![alt text](../../img/jobs-api-url-2.png)
+
+![alt text](../../img/cli-configs-1.png)
+
+![alt text](../../img/cli-configs-2.png)
+
+Next, generate a CDP Access Key and edit your CDP credentials file.
+
+Navigate to the CDP User Management page and generate a CDP Access Key as shown in the screenshots below. Copy both ```Access Key ID``` and ```Private Key``` to your clipboard.
+
+Then, in the same JupyterLab terminal, open the cdp credentials file and add the two values in it:
+
+```
+vi ~/.cdp/credentials
+```
+
+Your cdp credentials file should look similar to this:
+
+```
+cdp_access_key_id = 85b1fc6b-5eb8-4e54-a166-1234567890
+cdp_private_key = KPt9IcJMb/R3Y4rxVv/-1234567890=
+```
+
+![alt text](../../img/usr-mgt-1.png)
+
+![alt text](../../img/usr-mgt-2.png)
+
+![alt text](../../img/usr-mgt-3.png)
+
+![alt text](../../img/cdp-credentials.png)
+
+#### Step 3: Set up the pipeline.
+
+You are now ready to use the CDE CLI.
+
+Set up the JOBS API URL for your DEV cluster as an environment variable:
+
+```
+export DEV_VCLUSTER_ENDPOINT=https://tckh2dlb.cde-h5d699bk.cotiviti.xfaz-gdb4.cloudera.site/dex/api/v1
+```
+
+Update the commands below to reflect your username wherever a job or resource name is prefixed by a user e.g. ```spark_observability_hol_user001``` should become ```spark_observability_hol_user002``` if you are ```user002```.
+
+Run your frst pipeline with the following commands:
+
+```
+cde resource create \
+  --name spark_observability_hol_user001 \
+  --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+
+cde resource create \
+  --name numpy-user001 \
+  --type python-env \
+  --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+
+cde resource upload \
+  --name numpy-user001 \
+  --local-path observability/requirements.txt \
+  --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+
+cde resource upload \
+  --name spark_observability_hol_user001 \
+  --local-path observability/iceberg_merge_skew_multikey_dynamic_incremental_random_overlap.py \
+  --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+```
+
+Wait for the python environment build to complete. Then create the Incremental Read job.
+
+![alt text](../../img/env-build-inprogress.png)
+
+![alt text](../../img/env-build-complete.png)
+
+```
+cde job delete \
+  --name iceberg_merge_dynamic_incremental_user001 \
+  --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+
+cde job create \
+  --name iceberg_merge_dynamic_incremental_user001 \
+  --type spark \
+  --application-file iceberg_merge_skew_multikey_dynamic_incremental_random_overlap.py \
+  --python-env-resource-name numpy-user001 \
+  --mount-1-resource spark_observability_hol_user001 \
+  --executor-cores 4 \
+  --executor-memory "8g" \
+  --driver-cores 4 \
+  --driver-memory "4g" \
+  --arg spark_catalog.default.target_table_user001 \
+  --arg spark_catalog.default.source_table_user001 \
+  --conf spark.dynamicAllocation.minExecutors=1 \
+  --conf spark.dynamicAllocation.maxExecutors=20 \
+  --conf spark.sql.adaptive.enabled=False \
+  --conf spark.sql.shuffle.partitions=200 \
+  --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+```
+
+#### Step 4: Run the Pipeline.
+
+Using the JupyterLab IDE, open ```observability/iceberg_merge_skew_multikey_dynamic_incremental_random_overlap.py``` and familiarize yourself with the code.
+
+Next, open ```airflow_orch.py``` and also familiarize yourself with the code.
+
+* At line 52, update the ```username``` variable with your assigned user e.g. ```user001```.
+* At line 57, update the ```owner``` variable with your name e.g. ```mike```.
+
+Next, use the following commands to set up the Airflow pipeline. Before running them, copy the commands to your notepad or notebook and update the username appended to each command with your assigned username e.g. ```user001```.
+
+As in the previous lab, don't forget to update the CLI commands to reflect your assigned user e.g. ```dynamic-incremental-orch-user001``` should become ```dynamic-incremental-orch-user002``` if you are ```user002```.
+
+Once created, the Airflow job  will run the merge into jobs incrementally.
+
+```
+cde job delete \
+  --name dynamic-incremental-orch-user001 \
+  --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+
+cde resource upload \
+  --name spark_observability_hol_user001 \
+  --local-path observability/airflow_orch.py \
+  --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+
+cde job create \
+  --type airflow \
+  --name dynamic-incremental-orch-user001 \
+  --dag-file airflow_orch.py \
+  --mount-1-resource spark_observability_hol_user001 \
+  --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+```
+
+![alt text](../../img/notebook-complete-cli.png)
+
+Navigate to the CDE Job Runs page and validate that the Spark and Airflow jobs are running.
+
+![alt text](../../img/jobs-running-1.png)
+
+The Spark jobs pipeline will complete in about an hour. You can move on to the next section and work on that while this runs.
+
+![alt text](../../img/job-runs-complete.png)
+
+## Summary and Next Steps
+
+A CDE Service defines compute instance types, instance autoscale ranges and the associated CDP Data Lake. The Data and Users associated with the Service are subjected by SDX and the CDP Environment settings. You can leverage SDX Atlas and Ranger to visualize table and job metadata and secure user and data access with fine-grained policies.
+
+Within a CDE Service you can deploy one or more CDE Virtual Clusters. The Service Autoscale Range is a count of min/max allowed Compute Instances. The Virtual Cluster Autoscale Range is the min/max CPU and Memory that can be utilized by all CDE Jobs within the cluster. The Virtual Cluster Autoscale Range is naturally bounded by the CPU and Memory available at the Service level.
+
+CDE 1.26 supports Spark version 3.5.4 (Python 3.11, Iceberg 1.5.2, Java 17, Scala 2.12). CDE Virtual Clusters are deployed with one Spark Version per Virtual Cluster.
+
+This flexible architecture allows you to isolate your workloads and limit access within different autoscaling compute clusters while predefining cost management guardrails at an aggregate level. For example, you can define Services at an organization level and Virtual Clusters within them as DEV, QA, PROD, etc.
+
+CDE takes advantage of YuniKorn resource scheduling and sorting policies, such as gang scheduling and bin packing, to optimize resource utilization and improve cost efficiency. For more information on gang scheduling, see the Cloudera blog post [Spark on Kubernetes – Gang Scheduling with YuniKorn](https://blog.cloudera.com/spark-on-kubernetes-gang-scheduling-with-yunikorn/).
+
+CDE Spark Job auto-scaling is controlled by Apache Spark dynamic allocation. Dynamic allocation scales job executors up and down as needed for running jobs. This can provide large performance benefits by allocating as many resources as needed by the running job, and by returning resources when they are not needed so that concurrent jobs can potentially run faster.
+
+You might also find the following references relevant:
+
+* [CDE Concepts](https://docs.cloudera.com/data-engineering/cloud/cli-access/topics/cde-cli-concepts.html)
+* [CDE CLI Command Reference](https://docs.cloudera.com/data-engineering/cloud/cli-access/topics/cde-cli-reference.html)
+* [Installing the CDE CLI](https://docs.cloudera.com/data-engineering/cloud/cli-access/topics/cde-cli.html)
+* [Simple Introduction to the CDE CLI](https://github.com/pdefusco/CDE_CLI_Simple)

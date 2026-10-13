@@ -1,0 +1,7 @@
+.git
+.local
+*.pem
+*-pass*
+**/.DS_Store
+**/.ipynb_checkpoints
+**/__pycache__
