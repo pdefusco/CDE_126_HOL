@@ -23,6 +23,12 @@ Set the Prod VC Jobs API URL as an environment variable. From now on, run the fo
 export PRD_VCLUSTER_ENDPOINT=https://45qf4rf4.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1
 ```
 
+The CLI caches a separate access token for each Virtual Cluster. Sign in to the PRD Virtual Cluster before pasting the commands below, and enter your Workload Password when prompted:
+
+```
+cde job list --vcluster-endpoint $PRD_VCLUSTER_ENDPOINT
+```
+
 ```
 cde repository create \
   --name sparkAppRepoPrdUser001 \

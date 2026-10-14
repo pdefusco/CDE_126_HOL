@@ -256,9 +256,17 @@ Set up the JOBS API URL for your DEV cluster as an environment variable:
 export DEV_VCLUSTER_ENDPOINT=https://m4748n78.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1
 ```
 
+Sign in to the DEV Virtual Cluster by listing its jobs. Enter your Workload Password when prompted:
+
+```
+cde job list --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT
+```
+
+The CLI caches your access token, so the commands below won't ask for your password again. Don't paste a block of commands while the CLI is waiting for a password: the prompt reads the next pasted line as your password, and the commands after it fail. If the CLI asks for your password again later, enter it, then rerun the commands from the one that prompted.
+
 Update the commands below to reflect your username wherever a job or resource name is prefixed by a user e.g. ```spark_observability_hol_user001``` should become ```spark_observability_hol_user002``` if you are ```user002```.
 
-Run your frst pipeline with the following commands:
+Run your first pipeline with the following commands:
 
 ```
 cde resource create \
