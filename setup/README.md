@@ -138,7 +138,7 @@ The image bakes in the CDE 1.26 CLI and Spark Connect tarballs. The large binari
 
 ## Teardown Instructions
 
-When you are done run this script to tear down the data in the Catalog but not in S3. That step will be handled by the GOES teardown scripts. It drops each participant's HOL_DB_userNNN database and the participant tables created in the default database.
+When you are done run this script to tear down the data in the Catalog but not in S3. That step will be handled by the GOES teardown scripts. It drops each participant's HOL_DB_userNNN and db_1M_userNNN (optional compaction lab) databases and the participant tables created in the default database.
 
 ```
 % ./setup/teardown.sh <cdp-workload-user> <max-participants>

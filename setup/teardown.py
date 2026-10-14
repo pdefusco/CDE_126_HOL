@@ -81,17 +81,18 @@ def createSparkSession():
 
 def dropDatabase(spark, username):
     """
-    Method to drop database for provided user
+    Method to drop the databases created for provided user (labs and the optional compaction lab)
     """
 
-    try:
-        print("DROP DB CASCADE: HOL_DB_{}".format(username))
-        spark.sql("DROP DATABASE IF EXISTS SPARK_CATALOG.HOL_DB_{} CASCADE".format(username))
-    except Exception as e:
-        print("DROP HOL_DB_{} DB UNSUCCESSFUL".format(username))
-        print('\n')
-        print(f'caught {type(e)}: e')
-        print(e)
+    for database in ["HOL_DB_" + username, "db_1M_" + username]:
+        try:
+            print("DROP DB CASCADE: {}".format(database))
+            spark.sql("DROP DATABASE IF EXISTS SPARK_CATALOG.{} CASCADE".format(database))
+        except Exception as e:
+            print("DROP {} DB UNSUCCESSFUL".format(database))
+            print('\n')
+            print(f'caught {type(e)}: e')
+            print(e)
 
 
 def dropDefaultTables(spark, username):
