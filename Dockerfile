@@ -2,8 +2,8 @@
 # Built for linux/amd64 and linux/arm64. Under x86 emulation on Apple Silicon, the Jupyter server deadlocks when it opens a terminal while a kernel is running
 FROM python:3.11-slim-bookworm
 
-RUN apt-get update && apt-get install -y --no-install-recommends gcc make curl bash git vim-tiny less jq procps \
-    && ln -sf /usr/bin/vim.tiny /usr/bin/vi \
+# Full vim, not vim-tiny: vim-tiny runs vi-compatible, so arrow keys in insert mode type A/B/C/D
+RUN apt-get update && apt-get install -y --no-install-recommends gcc make curl bash git vim less jq procps \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home --shell /bin/bash cdeuser
