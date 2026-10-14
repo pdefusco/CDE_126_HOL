@@ -24,11 +24,17 @@ if ! ls spark-connect/cdeconnect*.tar.gz >/dev/null 2>&1; then
   exit 1
 fi
 
-OUTPUT="--push"
+# Push both architectures. Apple Silicon needs the native arm64 image (see Dockerfile).
+# --no-push loads the local architecture only, since the docker image store holds one platform per tag
 if [ "${1:-}" = "--no-push" ]; then
-  OUTPUT="--load"
+  docker buildx build --platform "linux/$(docker version -f '{{.Server.Arch}}')" \
+    -t "$IMAGE:$VERSION" -t "$IMAGE:latest" \
+    --load .
+else
+  # Multi-platform pushes need a docker-container builder
+  docker buildx inspect cde-hol-multiarch >/dev/null 2>&1 || \
+    docker buildx create --name cde-hol-multiarch --driver docker-container >/dev/null
+  docker buildx build --builder cde-hol-multiarch --platform linux/amd64,linux/arm64 \
+    -t "$IMAGE:$VERSION" -t "$IMAGE:latest" \
+    --push .
 fi
-
-docker buildx build --platform linux/amd64 \
-  -t "$IMAGE:$VERSION" -t "$IMAGE:latest" \
-  $OUTPUT .

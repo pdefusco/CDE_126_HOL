@@ -1,5 +1,6 @@
 # CDE 1.26 Virtual Clusters run Python 3.11; the Spark Connect client must match
-FROM --platform=linux/amd64 python:3.11-slim-bookworm
+# Built for linux/amd64 and linux/arm64. Under x86 emulation on Apple Silicon, the Jupyter server deadlocks when it opens a terminal while a kernel is running
+FROM python:3.11-slim-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends gcc make curl bash git vim-tiny less jq procps \
     && ln -sf /usr/bin/vim.tiny /usr/bin/vi \
@@ -17,7 +18,7 @@ RUN pip3 install --no-cache-dir numpy \
   matplotlib \
   scikit-learn
 
-# CDE 1.26 CLI (linux-amd64), downloaded by docker/build.sh
+# CDE 1.26 CLI (linux-amd64), downloaded by docker/build.sh. In the arm64 image it runs through Docker Desktop's x86 emulation
 COPY bin/cde /usr/local/bin/cde
 RUN chmod 755 /usr/local/bin/cde
 
@@ -42,6 +43,8 @@ RUN chown -R cdeuser:cdeuser /home/cdeuser &&\
 USER cdeuser
 
 ENV PATH="/home/cdeuser/.local/bin:${PATH}"
+# JupyterLab terminals start $SHELL, falling back to sh
+ENV SHELL=/bin/bash
 
 EXPOSE 8888
 
