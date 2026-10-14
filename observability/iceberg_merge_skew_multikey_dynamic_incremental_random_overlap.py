@@ -70,17 +70,13 @@ def create_skew_ids(num_keys=10):
 # Generate skewed id set
 skewed_ids, skew_weights = create_skew_ids(num_keys=10)
 
-# Choose overlap fraction
-overlap_fraction = random.uniform(0.1, 0.9)
-overlap_count = int(len(skewed_ids) * overlap_fraction)
-overlap_ids = skewed_ids[:overlap_count]
-new_ids = [i + 10_000_000_000 for i in skewed_ids[overlap_count:]]
-df2_ids = overlap_ids + new_ids
+# df2 uses new IDs only. Each skewed ID repeats across millions of rows, so an ID on both
+# sides of the MERGE joins millions of rows to millions and the executors run out of memory
+df2_ids = [i + 10_000_000_000 for i in skewed_ids]
 df2_weights = np.random.dirichlet(np.ones(len(df2_ids)), size=1)[0]
 
-print(f"Overlap fraction: {overlap_fraction:.2%}")
 print(f"df1 will use {len(skewed_ids)} skewed IDs")
-print(f"df2 will reuse {len(overlap_ids)} (overlapping) and {len(new_ids)} (new) IDs")
+print(f"df2 will use {len(df2_ids)} new IDs")
 
 num_partitions = max(row_count // 1_000_000, 4)
 
