@@ -64,8 +64,20 @@ spark = CDESparkConnectSession.builder.sessionName('<your-spark-connect-session-
 ```
 
 ```
-storageLocation = <your-storage-location-here>
-username = <your-cdp-workload-username-here>
+storageLocation = "<your-storage-location-here>"
+username = "<your-hol-username-here>"
+```
+
+For example:
+
+```
+from cde import CDESparkConnectSession
+spark = CDESparkConnectSession.builder.sessionName('user001-hol-session').get()
+```
+
+```
+storageLocation = "s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014"
+username = "user001"
 ```
 
 ![alt text](../../img/runnotebook-1.png)
