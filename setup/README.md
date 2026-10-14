@@ -254,15 +254,19 @@ sudo docker exec cde-hol-web bash -c "python --version; cde --version"
 
 #### EC2 Teardown
 
-Terminate the instances after the event, then delete the security group and key pair:
+Terminate the instances after the event, then delete the security group and key pair. `IDS` is an array so the commands work in both bash and zsh (zsh doesn't split a plain variable into separate IDs). The security group lookup by name works in a new terminal where `SG_ID` isn't set:
 
 ```
-IDS=$(aws ec2 describe-instances --filters Name=tag:hol,Values=cde-126-hol \
+IDS=($(aws ec2 describe-instances --filters Name=tag:hol,Values=cde-126-hol \
   Name=instance-state-name,Values=pending,running,stopping,stopped \
-  --query 'Reservations[].Instances[].InstanceId' --output text)
+  --query 'Reservations[].Instances[].InstanceId' --output text))
+echo ${#IDS[@]} instances
 
-aws ec2 terminate-instances --instance-ids $IDS
-aws ec2 wait instance-terminated --instance-ids $IDS
+aws ec2 terminate-instances --instance-ids "${IDS[@]}" --query 'TerminatingInstances[].CurrentState.Name' --output text
+aws ec2 wait instance-terminated --instance-ids "${IDS[@]}"
+
+SG_ID=$(aws ec2 describe-security-groups --filters Name=group-name,Values=cde-126-hol \
+  --query 'SecurityGroups[0].GroupId' --output text)
 aws ec2 delete-security-group --group-id $SG_ID
 aws ec2 delete-key-pair --key-name cde-126-hol && rm cde-126-hol.pem
 ```
