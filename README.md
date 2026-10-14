@@ -4,7 +4,7 @@
 
 ## About the CDE Lab
 
-In these Labs you will gain hands-on experience the Cloudera Data Engineering Service. You will:
+In these Labs you will gain hands-on experience with the Cloudera Data Engineering Service. You will:
 
 1. Develop a PySpark and Iceberg Application connecting to a Spark Virtual Cluster via Spark Connect using the JupyterLab IDE.
 2. Prototype your Spark Application in a dedicated CDE DEV environment.
@@ -18,18 +18,20 @@ CDE is the Cloudera Data Engineering Service, a containerized managed service fo
 
 CDE allows you to create, manage, and schedule Apache Spark jobs without the overhead of creating and maintaining Spark clusters. With CDE, you define virtual clusters with a range of CPU and memory resources, and the cluster scales up and down as needed to run your Spark workloads, helping to control your cloud costs.
 
+## Versions
+
+The labs target CDE 1.26.1 with Spark 3.5.4, Python 3.11, Iceberg 1.5.2 and Airflow 2.11.2.
+
+## Participant Environment
+
+Participants run the CDE CLI and Spark Connect from a JupyterLab IDE. Use one of:
+
+* **Local Docker:** `docker run -p 8888:8888 pauldefusco/cde_126_hol`, then open the JupyterLab URL printed in the terminal.
+* **EC2 instance:** provided by the HOL lead, with or without Docker. See the [Setup Guide](https://github.com/pdefusco/CDE_126_HOL/blob/main/setup/README.md#4-participant-ide-environment).
+
 ## Step by Step Instructions
 
 Detailed instructions are provided in the [step_by_step_guides](https://github.com/pdefusco/CDE_126_HOL/tree/main/step_by_step_guides/english).
-
-* [Link to the English Guide](https://github.com/pdefusco/CDE_126_HOL/tree/main/step_by_step_guides/english)
-
-The translated guides below have not been updated for CDE 1.26 yet and still describe an earlier release. Please use the English guide for this lab.
-
-* [Enlace a la Guía en Español](https://github.com/pdefusco/CDE_126_HOL/tree/main/step_by_step_guides/espa%C3%B1ol)
-* [Lien vers le Guide en Français](https://github.com/pdefusco/CDE_126_HOL/tree/main/step_by_step_guides/fran%C3%A7ais)
-* [Link per la Guida in Italiano](https://github.com/pdefusco/CDE_126_HOL/tree/main/step_by_step_guides/italiano)
-* [Link para o Guia em Português](https://github.com/pdefusco/CDE_126_HOL/tree/main/step_by_step_guides/portugu%C3%AAs)
 
 ## Setup Instructions
 

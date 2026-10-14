@@ -53,19 +53,19 @@ You must always create data in the data directory. For example:
 
 ```
 #AWS
-% ./setup/new_deploy_hol.sh pauldefusco 10 s3a://pdf101126-buk-b8415038/data/cde-126-hol bank
+% ./setup/new_deploy_hol.sh <cdp-workload-user> 10 s3a://<your-bucket>/data/cde-126-hol bank
 ```
 
 ```
 #Azure
-% ./setup/new_deploy_hol.sh pauldefusco 7 abfs://logs@go01demoazure.dfs.core.windows.net/data/cde-126-hol manufacturing
+% ./setup/new_deploy_hol.sh <cdp-workload-user> 7 abfs://<container>@<storage-account>.dfs.core.windows.net/data/cde-126-hol manufacturing
 ```
 
 #### 2. Run deploy_hol_resources.sh in all the Spark 3.5 Virtual Clusters used by Participants.
 
 You must repeat these steps for each Spark 3.5 VC in which HOL participants will work through the labs.
 
-Before proceeding, make sure to update your ~/.cde/config.yaml with your Spark 3.5 Virtual Cluster's CDE Jobs API URL.
+The script targets the Virtual Cluster passed as the `<vcluster-endpoint>` argument (its CDE Jobs API URL), so you don't need to edit your ~/.cde/config.yaml between runs.
 
 Deployment script command template:
 
@@ -77,12 +77,12 @@ For example:
 
 ```
 #AWS
-% ./setup/deploy_hol_resources.sh pauldefusco https://m4748n78.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1 bank
+% ./setup/deploy_hol_resources.sh <cdp-workload-user> https://<vc-id>.cde-<service-id>.<env>.a465-9q4k.cloudera.site/dex/api/v1 bank
 ```
 
 ```
 #Azure
-% ./setup/deploy_hol_resources.sh pauldefusco https://<vc-id>.cde-<service-id>.<env>.a465-9q4k.cloudera.site/dex/api/v1 manufacturing
+% ./setup/deploy_hol_resources.sh <cdp-workload-user> https://<vc-id>.cde-<service-id>.<env>.a465-9q4k.cloudera.site/dex/api/v1 manufacturing
 ```
 
 #### 3. Airflow Configurations
@@ -103,7 +103,7 @@ First, open the Airflow tab of the Virtual Cluster Details page and install the 
 
 ![alt text](../img/pyenv-built.png)
 
-Then, create the GitHub Connection. Make sure to name the Conection ID with "default_github" and then paste the GitHub token in the respective field.
+Then, create the GitHub Connection. Make sure to name the Connection ID with "default_github" and then paste the GitHub token in the respective field.
 
 ![alt text](../img/airflow-ui.png)
 
@@ -147,7 +147,7 @@ When you are done run this script to tear down the data in the Catalog but not i
 For example:
 
 ```
-% ./setup/teardown.sh pauldefusco 2
+% ./setup/teardown.sh <cdp-workload-user> 2
 ```
 
 ## Python Utils

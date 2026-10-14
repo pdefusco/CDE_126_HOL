@@ -15,7 +15,6 @@ dnf install -y docker git wget
 systemctl start docker
 systemctl enable docker
 usermod -aG docker ec2-user
-newgrp docker
 
 
 # 3. Spin up the Public Jupyter Container with Token Disabled
