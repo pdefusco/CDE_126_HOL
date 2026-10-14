@@ -25,6 +25,8 @@ pip3 install pyspark-3.5.4.tar.gz
 
 ![alt text](../../img/install-deps.png)
 
+If you already had a notebook open before installing, restart its kernel (Kernel > Restart Kernel) so it picks up the new packages.
+
 #### Launch a CDE Spark Connect Session
 
 Spark Connect lets your notebook hold a lightweight, decoupled connection to a remote Spark runtime, so you get the responsiveness of local development—editing, running cells, and inspecting results in real time—while the heavy computation runs on the cluster.

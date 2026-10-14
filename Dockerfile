@@ -10,6 +10,9 @@ RUN useradd --create-home --shell /bin/bash cdeuser
 WORKDIR /home/cdeuser
 
 RUN mkdir /home/cdeuser/.cde /home/cdeuser/.cdp
+# pip3 installs into the user site. Python only adds it to sys.path at startup if it exists,
+# so a notebook kernel started before the Lab 2 pip installs wouldn't find pyspark
+RUN mkdir -p /home/cdeuser/.local/lib/python3.11/site-packages
 
 RUN pip3 install --no-cache-dir jupyter \
   jupyterlab
