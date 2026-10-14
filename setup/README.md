@@ -9,6 +9,7 @@ This document provides instructions for setting up HOL dependencies. The HOL lea
 
 * [Requirements](https://github.com/pdefusco/CDE_126_HOL/tree/main/setup#requirements)
 * [Deployment Instructions](https://github.com/pdefusco/CDE_126_HOL/tree/main/setup#deployment-instructions)
+* [EC2 Setup Guide](https://github.com/pdefusco/CDE_126_HOL/tree/main/setup#ec2-setup-guide)
 * [Teardown Instructions](https://github.com/pdefusco/CDE_126_HOL/tree/main/setup#teardown-instructions)
 * [Python Utils](https://github.com/pdefusco/CDE_126_HOL/tree/main/setup#python-utils)
 * [Summary](https://github.com/pdefusco/CDE_126_HOL/tree/main/setup#summary)
@@ -121,12 +122,7 @@ Participants run the CDE CLI and Spark Connect from JupyterLab. Pick one of the 
 2. **EC2 with Docker:** launch one EC2 instance per participant with `setup/aws-bootstrap.sh` as user data. It runs the same container on port 80.
 3. **EC2 without Docker:** launch one EC2 instance per participant with `setup/aws-bootstrap-native.sh` as user data. It installs Python 3.11, JupyterLab, the CDE CLI and the CDE 1.26 Spark Connect packages directly on the instance and serves JupyterLab on port 80 as a systemd service.
 
-For options 2 and 3:
-
-* AMI: Amazon Linux 2023 (x86_64). Instance type: t3.large or larger.
-* Security group: allow inbound TCP 80 only from participant IP ranges. JupyterLab is token-less by default. To require a password, set `JUPYTER_PASSWORD` at the top of `setup/aws-bootstrap-native.sh` before launching.
-* Pass the script as user data, e.g. `aws ec2 run-instances --image-id <al2023-ami> --instance-type t3.large --security-group-ids <sg> --subnet-id <subnet> --user-data file://setup/aws-bootstrap-native.sh --count <participants>`.
-* Bootstrapping takes a few minutes. Progress is logged to `/var/log/user-data.log` on the instance. Check the service with `sudo systemctl status jupyterlab`.
+For options 2 and 3, follow the [EC2 Setup Guide](https://github.com/pdefusco/CDE_126_HOL/tree/main/setup#ec2-setup-guide) below.
 
 ##### Rebuilding the Docker Image
 
@@ -135,6 +131,139 @@ The image bakes in the CDE 1.26 CLI and Spark Connect tarballs. The large binari
 1. Download the `cdeconnect` tarball from the Connect tab of a Spark Connect session in your 1.26 Virtual Cluster and place it in `spark-connect/`.
 2. Run `./docker/build.sh`. It downloads the CLI and pyspark tarball from the release if missing, then builds for linux/amd64 and pushes `pauldefusco/cde_126_hol:1.26.1` and `:latest`. Use `./docker/build.sh --no-push` to build locally only.
 
+
+## EC2 Setup Guide
+
+Use this guide when participants can't run Docker on their own machines. You launch one EC2 instance per participant, and each instance serves JupyterLab on port 80 with everything the labs need already installed. Participants only need a browser.
+
+There are two bootstrap scripts. Both were validated on Amazon Linux 2023 (x86_64) with t3.large instances:
+
+| Script | What it does | Participant terminal |
+|---|---|---|
+| `setup/aws-bootstrap.sh` | Installs Docker and runs the `pauldefusco/cde_126_hol:latest` container on port 80 | Inside the container, as `cdeuser` |
+| `setup/aws-bootstrap-native.sh` | Installs Python 3.11, JupyterLab, the CDE 1.26 CLI and the Spark Connect tarballs directly on the instance, and runs JupyterLab as a systemd service on port 80 | On the instance, as `ec2-user` |
+
+Either way, participants get the same home folder layout as the Docker image: the lab files, the `cdeconnect` and `pyspark` tarballs, and template `~/.cde/config.yaml` and `~/.cdp/credentials` files. They then follow the guides unchanged, starting with the `pip3 install` step in Lab 2.
+
+#### Prerequisites
+
+* AWS CLI v2, logged in to the target account and region, with permissions to create security groups and key pairs and to run and terminate EC2 instances.
+* Enough EC2 vCPU quota for the event: each t3.large uses 2 vCPUs. Request a quota increase in advance for large events.
+* The participants' public IP ranges, or your corporate egress range, for the security group.
+
+The commands below use shell variables. Run them in the same terminal session.
+
+#### 1. Pick a Region and a Public Subnet
+
+The instances need a public IP and an internet gateway route to install packages, clone this repository and download the release assets. The default VPC's subnets work:
+
+```
+export AWS_REGION=us-east-2
+
+aws ec2 describe-subnets --filters Name=default-for-az,Values=true \
+  --query 'Subnets[].[SubnetId,AvailabilityZone,VpcId]' --output text
+
+VPC_ID=<vpc-id>
+SUBNET_ID=<subnet-id>
+```
+
+#### 2. Create a Security Group
+
+JupyterLab is token-less by default, so only allow port 80 from participant IP ranges. Port 22 is optional and only needed for troubleshooting from your own IP.
+
+```
+SG_ID=$(aws ec2 create-security-group --group-name cde-126-hol \
+  --description "CDE 1.26 HOL participant JupyterLab" \
+  --vpc-id $VPC_ID --query GroupId --output text)
+
+aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 80 --cidr <participant-cidr>
+aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr <your-ip>/32
+```
+
+#### 3. Optional: Create a Key Pair
+
+A key pair lets you SSH into an instance to check the bootstrap log.
+
+```
+aws ec2 create-key-pair --key-name cde-126-hol --key-type ed25519 \
+  --query KeyMaterial --output text > cde-126-hol.pem
+chmod 600 cde-126-hol.pem
+```
+
+#### 4. Optional: Set a JupyterLab Password
+
+For `setup/aws-bootstrap-native.sh` only, set `JUPYTER_PASSWORD` at the top of the script before launching. All instances get the same password. Leave it empty for token-less access. `setup/aws-bootstrap.sh` is always token-less, so rely on the security group.
+
+#### 5. Launch the Instances
+
+Look up the latest Amazon Linux 2023 AMI, pick a script, and launch one instance per participant. The 30 GB root volume leaves room for the pyspark install (and the Docker image, for the Docker option). Drop `--key-name` if you skipped step 3.
+
+```
+AMI_ID=$(aws ssm get-parameter --name /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 \
+  --query Parameter.Value --output text)
+
+BOOTSTRAP=setup/aws-bootstrap-native.sh   # or setup/aws-bootstrap.sh for the Docker option
+PARTICIPANTS=10
+
+aws ec2 run-instances --image-id $AMI_ID --instance-type t3.large --count $PARTICIPANTS \
+  --subnet-id $SUBNET_ID --security-group-ids $SG_ID --associate-public-ip-address \
+  --key-name cde-126-hol \
+  --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=30,VolumeType=gp3,DeleteOnTermination=true}' \
+  --user-data file://$BOOTSTRAP \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=cde-126-hol},{Key=hol,Value=cde-126-hol}]' \
+  --query 'Instances[].InstanceId' --output text
+```
+
+#### 6. Hand Out the URLs
+
+Bootstrapping takes about 5 minutes after an instance reaches the running state. List the public IPs and assign one to each participant, along with their HOL username (user001, user002, ...):
+
+```
+aws ec2 describe-instances --filters Name=tag:hol,Values=cde-126-hol Name=instance-state-name,Values=running \
+  --query 'Reservations[].Instances[].[InstanceId,PublicIpAddress]' --output table
+```
+
+Participants open `http://<public-ip>/lab` in their browser.
+
+#### 7. Verify an Instance
+
+Open `http://<public-ip>/lab`. If you created a key pair, you can also check the bootstrap on the instance:
+
+```
+ssh -i cde-126-hol.pem ec2-user@<public-ip>
+
+cloud-init status --wait                     # waits until the bootstrap finishes, then prints "status: done"
+sudo tail -3 /var/log/user-data.log          # ends with "Bootstrap Script Completed"
+
+# Native option
+systemctl status jupyterlab
+bash -lc "python --version; cde --version"   # Python 3.11.x, cde version 1.26.1
+
+# Docker option
+sudo docker ps                               # cde-hol-web, 0.0.0.0:80->8888/tcp
+sudo docker exec cde-hol-web bash -c "python --version; cde --version"
+```
+
+#### Troubleshooting
+
+* **The page doesn't load:** check that the participant's IP is inside the security group's port 80 range, that the instance has a public IP, and that the bootstrap has finished (`cloud-init status`).
+* **The bootstrap failed:** read `/var/log/user-data.log`. Both scripts stop at the first error, so the last lines show the failing step. The most common cause is a subnet without internet access.
+* **JupyterLab stopped responding:** run `sudo systemctl restart jupyterlab` (native) or `sudo docker restart cde-hol-web` (Docker).
+
+#### EC2 Teardown
+
+Terminate the instances after the event, then delete the security group and key pair:
+
+```
+IDS=$(aws ec2 describe-instances --filters Name=tag:hol,Values=cde-126-hol \
+  Name=instance-state-name,Values=pending,running,stopping,stopped \
+  --query 'Reservations[].Instances[].InstanceId' --output text)
+
+aws ec2 terminate-instances --instance-ids $IDS
+aws ec2 wait instance-terminated --instance-ids $IDS
+aws ec2 delete-security-group --group-id $SG_ID
+aws ec2 delete-key-pair --key-name cde-126-hol && rm cde-126-hol.pem
+```
 
 ## Teardown Instructions
 

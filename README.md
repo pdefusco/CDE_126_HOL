@@ -27,7 +27,7 @@ The labs target CDE 1.26.1 with Spark 3.5.4, Python 3.11, Iceberg 1.5.2 and Airf
 Participants run the CDE CLI and Spark Connect from a JupyterLab IDE. Use one of:
 
 * **Local Docker:** `docker run -p 8888:8888 pauldefusco/cde_126_hol`, then open the JupyterLab URL printed in the terminal.
-* **EC2 instance:** provided by the HOL lead, with or without Docker. See the [Setup Guide](https://github.com/pdefusco/CDE_126_HOL/blob/main/setup/README.md#4-participant-ide-environment).
+* **EC2 instance:** provided by the HOL lead, with or without Docker. See the [EC2 Setup Guide](https://github.com/pdefusco/CDE_126_HOL/blob/main/setup/README.md#ec2-setup-guide).
 
 ## Step by Step Instructions
 
