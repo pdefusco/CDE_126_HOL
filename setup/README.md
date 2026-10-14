@@ -62,6 +62,8 @@ You must always create data in the data directory. For example:
 % ./setup/new_deploy_hol.sh <cdp-workload-user> 7 abfs://<container>@<storage-account>.dfs.core.windows.net/data/cde-126-hol manufacturing
 ```
 
+The script writes the data to `<storage-location>/<demo>/<YYYYMMDD>`, using the date it runs, and prints that path on its first line (`STORAGE: ...`). The guides reference this path as a job argument in `step_by_step_guides/english/02-development.md` and `03-deployment.md`. Each time you rerun the script, update the storage path in both guides to the printed one.
+
 #### 2. Run deploy_hol_resources.sh in all the Spark 3.5 Virtual Clusters used by Participants.
 
 You must repeat these steps for each Spark 3.5 VC in which HOL participants will work through the labs.

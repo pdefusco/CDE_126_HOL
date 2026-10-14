@@ -84,7 +84,7 @@ cde job create --name cde_spark_job_prd_user001 \
   --executor-memory "4g" \
   --application-file pyspark-app.py\
   --vcluster-endpoint $PRD_VCLUSTER_ENDPOINT \
-  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261013 \
+  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
   --arg user001
 ```
 
@@ -145,7 +145,7 @@ For example:
 cde job create --name cde_spark_job_bronze_user001 \
   --type spark \
   --arg user001 \
-  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261013 \
+  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
   --mount-1-resource sparkAppRepoPrdUser001 \
   --python-env-resource-name Python-Env-Shared \
   --executor-cores 2 \
@@ -170,7 +170,7 @@ cde job create --name cde_spark_job_silver_user001 \
 cde job create --name cde_spark_job_gold_user001 \
   --type spark \
   --arg user001 \
-  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261013 \
+  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
   --mount-1-resource sparkAppRepoPrdUser001 \
   --python-env-resource-name Python-Env-Shared \
   --executor-cores 2 \

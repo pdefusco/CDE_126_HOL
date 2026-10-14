@@ -92,7 +92,7 @@ cde spark submit \
   --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT \
   --executor-memory "4g" \
   --executor-cores 2 \
-  s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261013 \
+  s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
   user001
 ```
 
@@ -175,7 +175,7 @@ cde job create --name cde_spark_iceberg_job_user001 \
   --executor-memory "4g" \
   --application-file pyspark-app.py\
   --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT \
-  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261013 \
+  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
   --arg user001
 ```
 
