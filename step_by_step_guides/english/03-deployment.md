@@ -20,7 +20,7 @@ Create and sync the same Git repo from the PRD Cluster.
 Set the Prod VC Jobs API URL as an environment variable. From now on, run the following CLI commands to deploy the jobs in PRD.
 
 ```
-export PRD_VCLUSTER_ENDPOINT=https://45qf4rf4.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1
+export PRD_VCLUSTER_ENDPOINT=https://624b7hhz.cde-xzt6px9h.pdf11052.a465-9q4k.cloudera.site/dex/api/v1
 ```
 
 The CLI caches a separate access token for each Virtual Cluster. Sign in to the PRD Virtual Cluster before pasting the commands below, and enter your Workload Password when prompted:
@@ -90,7 +90,7 @@ cde job create --name cde_spark_job_prd_user001 \
   --executor-memory "4g" \
   --application-file pyspark-app.py\
   --vcluster-endpoint $PRD_VCLUSTER_ENDPOINT \
-  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
+  --arg s3a://pdf110526-buk-aca9c6d5/data/cde-126-hol/bank/20261110 \
   --arg user001
 ```
 
@@ -151,7 +151,7 @@ For example:
 cde job create --name cde_spark_job_bronze_user001 \
   --type spark \
   --arg user001 \
-  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
+  --arg s3a://pdf110526-buk-aca9c6d5/data/cde-126-hol/bank/20261110 \
   --mount-1-resource sparkAppRepoPrdUser001 \
   --python-env-resource-name Python-Env-Shared \
   --executor-cores 2 \
@@ -176,7 +176,7 @@ cde job create --name cde_spark_job_silver_user001 \
 cde job create --name cde_spark_job_gold_user001 \
   --type spark \
   --arg user001 \
-  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
+  --arg s3a://pdf110526-buk-aca9c6d5/data/cde-126-hol/bank/20261110 \
   --mount-1-resource sparkAppRepoPrdUser001 \
   --python-env-resource-name Python-Env-Shared \
   --executor-cores 2 \

@@ -209,7 +209,7 @@ Your cde config file should look something like this:
 
 ```
 user: user001
-vcluster-endpoint: https://m4748n78.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1
+vcluster-endpoint: https://r7b7gcqd.cde-xzt6px9h.pdf11052.a465-9q4k.cloudera.site/dex/api/v1
 cdp-endpoint: https://api.us-west-1.cdp.cloudera.com
 ```
 
@@ -253,7 +253,7 @@ You are now ready to use the CDE CLI.
 Set up the JOBS API URL for your DEV cluster as an environment variable:
 
 ```
-export DEV_VCLUSTER_ENDPOINT=https://m4748n78.cde-wf5mpw7s.pdf10112.a465-9q4k.cloudera.site/dex/api/v1
+export DEV_VCLUSTER_ENDPOINT=https://r7b7gcqd.cde-xzt6px9h.pdf11052.a465-9q4k.cloudera.site/dex/api/v1
 ```
 
 Sign in to the DEV Virtual Cluster by listing its jobs. Enter your Workload Password when prompted:

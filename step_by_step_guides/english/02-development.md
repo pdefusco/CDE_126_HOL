@@ -76,7 +76,7 @@ spark = CDESparkConnectSession.builder.sessionName('user001-hol-session').get()
 ```
 
 ```
-storageLocation = "s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014"
+storageLocation = "s3a://pdf110526-buk-aca9c6d5/data/cde-126-hol/bank/20261110"
 username = "user001"
 ```
 
@@ -106,7 +106,7 @@ cde spark submit \
   --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT \
   --executor-memory "4g" \
   --executor-cores 2 \
-  s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
+  s3a://pdf110526-buk-aca9c6d5/data/cde-126-hol/bank/20261110 \
   user001
 ```
 
@@ -189,7 +189,7 @@ cde job create --name cde_spark_iceberg_job_user001 \
   --executor-memory "4g" \
   --application-file pyspark-app.py\
   --vcluster-endpoint $DEV_VCLUSTER_ENDPOINT \
-  --arg s3a://pdf101126-buk-b8415038/data/cde-126-hol/bank/20261014 \
+  --arg s3a://pdf110526-buk-aca9c6d5/data/cde-126-hol/bank/20261110 \
   --arg user001
 ```
 
